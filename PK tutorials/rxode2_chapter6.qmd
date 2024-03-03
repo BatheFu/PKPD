@@ -1,0 +1,59 @@
+---
+title: "rxode2_chapter6"
+author: "Yugang"
+format: html
+editor: visual
+execute: 
+  warning: false
+  echo: true
+---
+
+## Getting Started
+
+```{r}
+rm(list = ls())
+library(rxode2)
+library(tidyverse)
+library(ggthemes)
+
+sessionInfo()
+```
+
+## rxode2 syntax
+
+An example
+
+```{r}
+   # An rxode2 model specification (this line is a comment).
+mod <- function(){
+    
+    ini({
+      F = 0.80;    # 20% reduced bioavailability
+   })
+    
+model({
+    
+   C2 = centr/V2;  # concentration in the central compartment
+   C3 = peri/V3;   # concentration in the peripheral compartment
+
+   # ODE describing the PK and PD
+
+   d/dt(depot) = -KA*depot;
+   d/dt(centr) = F*KA*depot - CL*C2 - Q*C2 + Q*C3;
+   d/dt(peri)  =                      Q*C2 - Q*C3;
+   d/dt(eff)   = Kin - Kout*(1-C2/(EC50+C2))*eff;
+   
+})
+   
+}
+
+mod <- mod()
+mod
+summary(mod$simulationModel)
+```
+
+-   special model event changes including **bioavailability** (`f(depot)=1`), **lag time** (`alag(depot)=0`), **modeled rate** (`rate(depot)=2`) and **modeled duration** (`dur(depot)=2`). An example of these model features and the event specification for the modeled infusions the rxode2 data specification is found in [rxode2 events section](https://nlmixr2.github.io/rxode2-manual/events.html#events).
+
+```{r}
+
+```
