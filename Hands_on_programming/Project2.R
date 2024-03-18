@@ -58,3 +58,37 @@ deck <- data.frame(
 
 deck[1,c(1,2,3)]
 
+
+# Environment
+
+as.environment("package:stats")
+globalenv()
+# 
+# When R does not find an object in an environment, 
+# R looks in the environment’s parent environment, 
+# then the parent of the parent, and so on
+
+show_env <- function(){
+  list(ran.in = environment(), 
+       parent = parent.env(environment()),
+       objects = ls.str(environment())
+  );
+}
+
+# R will use the new environment as the active environment 
+# while it runs the function, and then R will return to the environment 
+# that you called the function from,
+# bringing the function’s result with it.
+# , until R finds the object or reaches the empty environment.
+
+show_env()
+
+foo <- "take me to your runtime"
+
+show_env <- function(x = foo){
+  list(ran.in = environment(), 
+       parent = parent.env(environment()), 
+       objects = ls.str(environment()))
+}
+show_env()
+show_env()
