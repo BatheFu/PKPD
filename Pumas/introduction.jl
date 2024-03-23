@@ -48,3 +48,14 @@ summary_observations_vs_time(
     axis = (; xlabel = "Time (hr)", ylabel = "CTMX Concentration (μg/mL)"),
     facet = (; combinelabels = true, linkaxes = true),
 )
+
+pk_nca = run_nca(pkpain_nca; sigdigits = 3)
+
+f = subject_fits(
+    pk_nca,
+    paginate = true,
+    axis = (; xlabel = "Time (hr)", ylabel = "CTMX Concentration (μg/mL)"),
+    facet = (; combinelabels = true, linkaxes = true),
+)
+f[1]
+
