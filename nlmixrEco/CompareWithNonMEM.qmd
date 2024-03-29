@@ -1,0 +1,48 @@
+---
+title: "Compare501Dataset"
+author: "yugang"
+format: html
+editor: visual
+---
+
+### 测试501数据集在NONMEM和NLMIXR2上的表现区别
+
+```{r}
+library(tidyverse)
+library(nlmixr2)
+
+
+rm(list = ls())
+
+dat = read.csv('~/data/501.csv')
+dat = dat %>%
+    mutate(EVID = ifelse(
+        AMT > 0, 101, 0)
+    )
+
+one.cmt <- function() {
+  ini({
+
+    tcl <- 5
+    tv <- 10
+    
+    eta.cl ~ 0.2
+    eta.v ~ 0.2
+    prop.err <- 0.1
+  })
+  model({
+
+    CL <- tcl * exp(eta.cl)
+    V <- tv * exp(eta.v)
+
+    d/dt(centr) = -(CL/V)*centr
+    
+    C = centr/V
+    C ~ prop(prop.err)
+  })
+}
+
+fit1 <- nlmixr(one.cmt, dat,  est="focei",
+               control=list(print=0))
+print(fit1)
+```
