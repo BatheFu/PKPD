@@ -46,3 +46,6 @@ fit1 <- nlmixr(one.cmt, dat,  est="focei",
                control=list(print=0))
 print(fit1)
 ```
+### Not the same with Pirana. A bit unstable
+
+A bit change in eta initial conditions vary a lot
