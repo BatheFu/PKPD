@@ -11,30 +11,28 @@ using CairoMakie
 using PharmaDatasets
 
 path = "C:\\Users\\m1825\\Documents\\data\\"
-dat = CSV.read(path*"501.csv", DataFrame)
+path_mac = "/Users/mircn/Downloads/"
+dat = CSV.read(path_mac*"501.csv", DataFrame)
 
 first(dat, 5)
 
 @rtransform! dat begin
     :EVID = :AMT == 0 ? 0 : 1
     :CMT = :AMT > 0 ? 1 : missing
+    :AMT = :AMT == 0 ? missing : :AMT
+    :CONC = :DV == 0 ? missing : :DV
 end
 
 @select! dat $(Not(:C))
 
-@rtransform! dat begin
-    :AMT = :AMT == 0 ? missing : :AMT
-    :DV = :DV == 0 ? missing : :DV
-end
-
-first(dat, 3)
+first(dat, 5)
 
 pk501 = read_pumas(
     dat;
     id = :ID,
     time = :TIME,
     amt = :AMT,
-    observations = [:DV],
+    observations = [:CONC],
     covariates = [:WT, :AGE, :SEX],
     cmt = :CMT,
     evid = :EVID
@@ -67,6 +65,10 @@ pk_1cmp = @model begin
         Proportional RUV
         """
         σ_p ∈ RealDomain(; lower = 0.0001, init = 0.1)
+        """
+        Additive RUV
+        """
+        σ_a ∈ RealDomain(; lower = 0.0001, init = 0.1)
     end
 
     @random begin
@@ -91,12 +93,12 @@ pk_1cmp = @model begin
         """
         CTMx Concentration (ng/mL)
         """
-        Conc ~ @. Normal(cp, abs(cp) * σ_p)
+        CONC ~ @. Normal(cp, sqrt(σ_a^2 + (cp * σ_p)^2))
     end
 
 end
 
-pkparam = (; init_params(pk_1cmp)..., tvv = 10)
+pkparam = (; init_params(pk_1cmp)..., σ_a = 0.5)
 
 pkfit_1cmp = fit(pk_1cmp, pk501, pkparam, FOCE();)
 
@@ -105,7 +107,7 @@ pkfit_1cmp = fit(pk_1cmp, pk501, pkparam, FOCE();)
 
 
 
-
+# Example of the official Documents
 
 pkpain_df = dataset("pk_painrelief")
 first(pkpain_df, 5)
@@ -122,6 +124,8 @@ end
     :cmt2 = 1 # for zero order absorption
 end
 @rtransform! pkpain_noplb_df :Conc = :evid == 1 ? missing : :Conc
+
+first(pkpain_noplb_df, 4)
 
 pkpain_noplb = read_pumas(
     pkpain_noplb_df;
@@ -195,6 +199,6 @@ pk_1cmp = @model begin
 
 end
 
-pkparam = (; init_params(pk_1cmp)..., tvka = 2, tvv = 10)
+pkparam = (; init_params(pk_1cmp)..., tvka = 2)
 
-pkfit_1cmp = fit(pk_1cmp, pkpain_noplb, pkparam, FOCE(); constantcoef = (; tvka = 2))
+pkfit_1cmp = fit(pk_1cmp, pkpain_noplb, pkparam, FOCE())
