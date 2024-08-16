@@ -2,11 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-.gitignore
 Ignore
 nlmixrEco/courses
 PKPD.Rproj
-Pumas/WCoP2022_Workshop
-Pumas/Bayesian_Workshop
-Pumas/BayesPBPK-tutorial
-Pumas/bioPBPK
+Pumas/courses
