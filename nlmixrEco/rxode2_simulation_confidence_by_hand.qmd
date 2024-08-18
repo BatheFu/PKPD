@@ -19,6 +19,7 @@ You can add options to executable code like this
 The `echo: false` option disables the printing of code (only output is displayed).\
 
 ```{r}
+library(rxode2)
 mod1 <- function() {
   ini({
     # central 
@@ -58,7 +59,6 @@ ev
 ```
 
 ```{r}
-library(rxode2)
 
 set.seed(32)
 rxSetSeed(32)
@@ -106,6 +106,7 @@ class(p)
 
 ```{r}
 library(tidyverse)
+library(units)
 sim %>% 
     group_by(time) %>% 
     summarise(
