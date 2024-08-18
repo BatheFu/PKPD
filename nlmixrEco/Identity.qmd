@@ -1,0 +1,88 @@
+## Requirements
+
+I would encourage you to go through this exercise:\
+\
+1) Generate a set of \"perfect" PK data (central compartment concentration only) by simulating a two-compartment model. For the sake of simplicity, do not add noise to the data. So you know the true parameter values.\
+2) Fit the data to a two-compartment model using the FME package - can you recover the true parameter values?\
+3) Using FME, calculate the collinearity for pairs / groups of parameters. Are they collinear?\
+4) Perform MCMC simulation with FME - can you recover the true parameter values? Are parameters all identifiable?\
+
+```{r}
+# step one
+
+## load the required libraries
+library(nlmixr2)
+library(lattice)
+library(rxode2)
+#################################################################################
+##                                                                             ##
+## rxode2 simulation Part 1                                                     ##
+##                                                                             ##
+## Simulation of a single (warfarin concentration) curve with a single dose    ##
+##                                                                             ##
+#################################################################################
+
+## set up the system of differential equations (ODEs)
+odeKA1 <- "
+ d/dt(depot)   = -ka*depot;
+ d/dt(central) =  ka*depot-(cl/v)*central;
+ C1=central/v;
+"
+
+## compile the model
+modKA1 <- rxode2(model = odeKA1)
+
+## provide the parameter values to be simulated:
+Params <- c(
+ ka = log(2) / 0.5, # 1/h (aborption half-life of 30 minutes)
+ cl = 0.135,        # L/h
+ v = 8              # L
+)
+
+## create an empty event table that stores both dosing and sampling information :
+ev <- eventTable()
+
+## add a dose to the event table:
+ev$add.dosing(dose = 500) #mg
+              
+## add time points to the event table where concentrations will be simulated; these actions are cumulative
+ev$add.sampling(seq(0, 120, 0.1))
+
+## Then solve the system
+##
+## The output from rxSolve is a solved RxODE object,
+##  but by making it a data.frame only the simulated values are kept:
+Res<-data.frame(rxSolve(modKA1,Params,ev))
+#Alternative code:
+Res<-data.frame(modKA1$run(Params,ev))
+
+
+## then plot the simulated outcomes in the compartments:
+## the amounts in the depot compartment
+xyplot(depot~time,data=Res,type='l',lwd=2)
+## the concentrations in the central compartment
+xyplot(C1~time,data=Res,type='l',lwd=2) 1
+
+
+## Extend the eventTable by adding three infusions to the central compartment
+## Remember: updates to the eventTable are cumulative
+
+ev$add.dosing(
+  dose = 250,           #mg
+  nbr.doses = 3,        #add three doses
+  dosing.to = 2,        #add them to the second ODE in the model (=central)
+  dosing.interval = 12, #h; set the doses 12 hours apart
+  rate = 125,           #mg/h; infuse at a rate of 125 mg/h, resulting in 2-hour infusions
+  start.time = 36       #h; have the three doses start at 36h
+)
+
+Res<-data.frame(rxSolve(modKA1,Params,ev))
+
+## only the first dose goes into the depot compartment, so nothing changes here:
+xyplot(depot~time,data=Res,type='l',lwd=2)
+
+## the concentrations in the central compartment now reflect the three additional infusions: in the compartments:
+p1<-xyplot(C1~time,data=Res,type='l',lwd=2)
+p1
+
+```
