@@ -33,7 +33,7 @@ modKA1 <- rxode2(model = odeKA1)
 
 ## provide the parameter values to be simulated:
 Params <- c(
- ka = log(2) / 0.5, # 1/h (aborption half-life of 30 minutes)
+ ka = log(2) / 3, # 1/h (aborption half-life of 3 hours)
  cl = 0.135,        # L/h
  v = 8              # L
 )
@@ -45,7 +45,7 @@ ev <- eventTable()
 ev$add.dosing(dose = 500) #mg
               
 ## add time points to the event table where concentrations will be simulated; these actions are cumulative
-ev$add.sampling(seq(0, 120, 0.1))
+ev$add.sampling(seq(0, 24, 2))
 
 ## Then solve the system
 ##
@@ -53,12 +53,11 @@ ev$add.sampling(seq(0, 120, 0.1))
 ##  but by making it a data.frame only the simulated values are kept:
 Res<-data.frame(rxSolve(modKA1,Params,ev))
 
-
 ## then plot the simulated outcomes in the compartments:
 ## the amounts in the depot compartment
-p1 <- xyplot(depot~time,data=Res,type='l',lwd=2, main = "depot compartment conc")
+p1 <- xyplot(depot~time,data=Res,type='l',lwd=2, main = "depot compartment")
 ## the concentrations in the central compartment
-p2 <- xyplot(C1~time,data=Res,type='l',lwd=2, main = "central compartment conc")
+p2 <- xyplot(C1~time,data=Res,type='l',lwd=2, main = "central compartment")
 
 grid.arrange(p1,p2, ncol = 2)
 
@@ -70,5 +69,17 @@ grid.arrange(p1,p2, ncol = 2)
 
 library(FME)
 
+#log
 
+DatalogC <- data_frame(
+    time = Res$time,
+    logC = log(Res$C1+1),
+    sd = 0.2
+)
+
+DataLogD <- data_frame(
+    time = Res$time,
+    logD = log(Res$depot+1),
+    sd = 0.2
+)
 ```
