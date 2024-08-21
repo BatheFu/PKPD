@@ -35,10 +35,15 @@ modKA1 <- rxode2(model = odeKA1)
 ## provide the parameter values to be simulated:
 Params <- c(
  ka = log(2) / 3, # 1/h (aborption half-life of 3 hours)
+<<<<<<< HEAD
  CL = 0.135,        # L/h
  Vc = 8,              # L
  Vp = 10,              # L
  Q = 0.09              # L
+=======
+ cl = 0.135,        # L/h
+ v = 8              # L
+>>>>>>> 20bcfcc729a5a720b1c9706d7bcd6e5fc6d843ef
 )
 
 ## create an empty event table that stores both dosing and sampling information :
@@ -55,7 +60,11 @@ ev$add.sampling(seq(0, 24, 2))
 ## The output from rxSolve is a solved RxODE object,
 ##  but by making it a data.frame only the simulated values are kept:
 Res<-data.frame(rxSolve(modKA1,Params,ev))
+<<<<<<< HEAD
 head(Res)
+=======
+
+>>>>>>> 20bcfcc729a5a720b1c9706d7bcd6e5fc6d843ef
 ## then plot the simulated outcomes in the compartments:
 ## the amounts in the depot compartment
 p1 <- xyplot(depot~time,data=Res,type='l',lwd=2, main = "depot compartment")
@@ -77,6 +86,7 @@ head(simulated_data,5)
 
 library(FME)
 
+<<<<<<< HEAD
 ###################################################
 ### code chunk number 2: FME.Rnw:349-370
 ###################################################
@@ -449,5 +459,19 @@ plot(CRL, ylab = "number of virions", trace = TRUE)
 ###################################################
 plot(CRL, ylab = "number of virions", cex=0.5, trace = TRUE)
 
+=======
+#log
+>>>>>>> 20bcfcc729a5a720b1c9706d7bcd6e5fc6d843ef
 
+DatalogC <- data_frame(
+    time = Res$time,
+    logC = log(Res$C1+1),
+    sd = 0.2
+)
+
+DataLogD <- data_frame(
+    time = Res$time,
+    logD = log(Res$depot+1),
+    sd = 0.2
+)
 ```
